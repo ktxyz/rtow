@@ -48,7 +48,7 @@ public:
         return val[0] * val[0] + val[1] * val[1] + val[2] * val[2];
     }
 
-    Vec3 unit() {
+    Vec3 unit() const {
         return *this / length();
     }
 };
@@ -63,17 +63,17 @@ std::ostream& operator<<(std::ostream& out, const Vec3<T>& v) {
 
 template<typename T>
 Vec3<T> operator+(const Vec3<T>& v1, const Vec3<T>& v2) {
-    return {v1.x() + v2.x(), v1.y() + v2.y(), v1.z() + v2.z};
+    return {v1.x() + v2.x(), v1.y() + v2.y(), v1.z() + v2.z()};
 }
 
 template<typename T>
 Vec3<T> operator-(const Vec3<T>& v1, const Vec3<T>& v2) {
-    return {v1.x() - v2.x(), v1.y() - v2.y(), v1.z() - v2.z};
+    return {v1.x() - v2.x(), v1.y() - v2.y(), v1.z() - v2.z()};
 }
 
 template<typename T>
 Vec3<T> operator*(const Vec3<T>& v1, const Vec3<T>& v2) {
-    return {v1.x() * v2.x(), v1.y() * v2.y(), v1.z() * v2.z};
+    return {v1.x() * v2.x(), v1.y() * v2.y(), v1.z() * v2.z()};
 }
 
 template<typename T>
@@ -88,7 +88,7 @@ Vec3<T> operator*(const Vec3<T>& v1, T value) {
 
 template<typename T>
 Vec3<T> operator/(const Vec3<T>& v1, T value) {
-    return (1/value) * v1;
+    return v1 * (1.0 / value);
 }
 
 namespace Vec3Util {

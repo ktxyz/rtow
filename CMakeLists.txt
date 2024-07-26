@@ -10,4 +10,5 @@ include_directories(include/)
 
 add_executable(rtow src/rtow.cpp
         src/vec3.h
-        src/color.h)
+        src/color.h
+        src/ray.h)
