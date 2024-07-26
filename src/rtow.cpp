@@ -7,10 +7,10 @@
 
 #include "color.h"
 #include "ray.h"
+#include "sphere.h"
 
 
 auto PPM_HEADER = "P3\n";
-
 
 struct Camera {
     Point3d center;
@@ -24,7 +24,12 @@ struct Camera {
     Vec3d viewport_v;
 };
 
+Sphere sphere1 = {{0, 0, -1}, 0.5};
+
 Color GetRayColor(const Ray& ray) {
+    if (sphere1.is_hit(ray))
+        return {1.0, 0, 0};
+
     auto unit_dir = ray.direction().unit();
     auto alpha = (unit_dir.y() + 1.0) / 2.f;
 
@@ -51,7 +56,7 @@ int main() {
     const auto pixel_delta_v = camera.viewport_v / static_cast<double>(HEIGHT);
 
     const auto view_corner = camera.center - Vec3d(0, 0, camera.focal_length)
-                                   - camera.viewport_u / 2.0 - camera.viewport_u / 2.0;
+                                   - camera.viewport_u / 2.0 - camera.viewport_v / 2.0;
     const auto pixel00_loc = view_corner + 0.5 * (pixel_delta_u + pixel_delta_v);
 
 
