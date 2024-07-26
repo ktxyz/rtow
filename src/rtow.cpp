@@ -5,8 +5,10 @@
 #include <fstream>
 #include <iostream>
 
+#include "color.h"
+
+
 const char* PPM_HEADER = "P3\n";
-constexpr double PPM_VALUE = 255.99;
 
 int main() {
     auto file = std::ofstream("output.ppm");
@@ -17,11 +19,13 @@ int main() {
     for (auto y = 0; y < HEIGHT; ++y) {
         std::cerr << "Scanlines remaining: " << (HEIGHT - y) << "\n";
         for(auto x = 0; x < WIDTH; ++x) {
-            auto r = static_cast<double>(x) / (WIDTH - 1);
-            auto g = static_cast<double>(y) / (HEIGHT - 1);
-            auto b = 0.0;
+            auto pixel = Color(
+                static_cast<double>(x) / (WIDTH - 1),
+                static_cast<double>(y) / (HEIGHT - 1),
+                0
+            );
 
-            file << static_cast<int>(PPM_VALUE * r) << " " << static_cast<int>(PPM_VALUE * g) << " " << static_cast<int>(PPM_VALUE * b) << "\n";
+            file << pixel << "\n";
         }
     }
 

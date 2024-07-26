@@ -8,4 +8,6 @@ project(rtwo)
 
 include_directories(include/)
 
-add_executable(rtow src/rtow.cpp)
+add_executable(rtow src/rtow.cpp
+        src/vec3.h
+        src/color.h)
