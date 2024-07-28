@@ -13,7 +13,7 @@
 template<typename T>
 class Vec3 {
     static constexpr int SIZE = 3;
-    double val[3];
+    T val[3]{};
 public:
     Vec3() : val{0, 0, 0} {}
     Vec3(T x, T y, T z) : val{x, y, z} {}

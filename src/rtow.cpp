@@ -14,8 +14,9 @@ int main() {
 
     Camera camera;
     camera.aspect_ratio = 16.f / 9.f;
-    camera.image_width = 400;
-    camera.samples_per_pixel = 50;
+    camera.image_width = 640;
+    camera.samples_per_pixel = 100;
+    camera.max_depth = 10;
 
     camera.Render(world, file);
 

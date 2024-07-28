@@ -21,14 +21,25 @@ namespace MathUtil {
         return degrees * PI / 180.0;
     }
 
-    inline double RandomDouble() {
-        static std::uniform_real_distribution<double> distribution(0.0, 1.0);
+    inline double RandomDouble(double min = 0.0, double max = 1.0) {
         static std::mt19937 generator;
+
+        std::uniform_real_distribution<double> distribution(min, max);
         return distribution(generator);
     }
 
     inline Vec3d RandomWindow(const double window_size = 0.5) {
         return {RandomDouble() - window_size, RandomDouble() - window_size, 0};
+    }
+
+    inline Vec3d RandomVec3d(const double min = 0.f, const double max = 1.f) {
+        return {RandomDouble(min, max), RandomDouble(min, max), RandomDouble(min, max)};
+    }
+
+    inline Vec3d RandomUnitVec3d() {
+        while (true)
+            if (auto p = RandomVec3d(-1, 1); p.length2() < 1)
+                return p.unit();
     }
 
     template<typename T>
@@ -43,6 +54,13 @@ namespace MathUtil {
             v1.z() * v2.x() - v1.x() * v2.z(),
             v1.x() * v2.y() - v1.y() * v2.x(),
         };
+    }
+
+    inline Vec3d RandomVec3dHemisphere(const Vec3d& normal) {
+        const auto unit_vec = RandomUnitVec3d();
+        if (dot(unit_vec, normal) > 0.0)
+            return unit_vec;
+        return -unit_vec;
     }
 }
 

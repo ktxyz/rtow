@@ -53,9 +53,14 @@ class Camera {
         return Ray(ray_origin, ray_direction);
     }
 
-    static Color GetRayColor(const Ray& ray, const Hittable& world) {
-        if (HitRecord record; world.CheckHit(ray, Interval(0, MathUtil::INF), record))
-            return 0.5 * (record.normal + Color(1, 1, 1));
+    Color GetRayColor(const Ray& ray, const Hittable& world, const int depth = 0) {
+        if (depth >= max_depth)
+            return {0, 0, 0};
+
+        if (HitRecord record; world.CheckHit(ray, Interval(0.1, MathUtil::INF), record)) {
+            auto direction = record.normal + MathUtil::RandomUnitVec3d();
+            return 0.5 * GetRayColor(Ray(record.point, direction), world, depth + 1);
+        }
 
         const auto unit_dir = ray.direction().unit();
         const auto alpha = (unit_dir.y() + 1.0) / 2.f;
@@ -66,6 +71,7 @@ public:
     double aspect_ratio = 1.0;
     int image_width = 100;
     int samples_per_pixel = 10;
+    int max_depth = 10;
 
     void Render(const Hittable& world, std::ofstream& file) {
         Initialize();

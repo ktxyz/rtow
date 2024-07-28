@@ -12,11 +12,17 @@
 using Color = Vec3d;
 constexpr double PPM_VALUE = 255.99;
 
+inline double Linear2Gamma(const double linear_component) {
+    if (linear_component > 0)
+        return std::sqrt(linear_component);
+    return 0;
+}
+
 template <typename Stream>
 Stream& operator<<(Stream& out, const Color& col) {
-    const auto r = col.x();
-    const auto g = col.y();
-    const auto b = col.z();
+    const auto r = Linear2Gamma(col.x());
+    const auto g = Linear2Gamma(col.y());
+    const auto b = Linear2Gamma(col.z());
 
     static const Interval intensity(0.000, 0.999);
     const int rbyte = static_cast<int>(256 * intensity.Clamp(r));
