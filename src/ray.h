@@ -20,7 +20,7 @@ public:
     const Point3d& origin() const { return orig; }
     const Vec3d& direction() const { return dir; }
 
-    Point3d offset(const double offset) const {
+    Point3d Offset(const double offset) const {
         return orig + (offset * dir);
     }
 };

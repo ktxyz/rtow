@@ -5,9 +5,7 @@
 #include <fstream>
 #include <iostream>
 
-#include "color.h"
-#include "ray.h"
-#include "sphere.h"
+#include "rtow.h"
 
 
 auto PPM_HEADER = "P3\n";
@@ -24,24 +22,16 @@ struct Camera {
     Vec3d viewport_v;
 };
 
-Sphere sphere1 = {{0, 0, -1}, 0.5};
-
-Color GetRayColor(const Ray& ray) {
-    if (sphere1.is_hit(ray))
-        return {1.0, 0, 0};
-
-    auto unit_dir = ray.direction().unit();
-    auto alpha = (unit_dir.y() + 1.0) / 2.f;
-
-    return (1.0 - alpha) * Color(1, 1, 1) + alpha * Color(0.5, 0.7, 1.0);
-}
-
 int main() {
     auto file = std::ofstream("output.ppm");
 
     constexpr float ASPECT_RATIO = 16.f / 9.f;
-    constexpr int WIDTH = 400;
+    constexpr int WIDTH = 360;
     constexpr int HEIGHT = static_cast<int>(WIDTH / ASPECT_RATIO);
+
+    HittableList world;
+    world.push_back(std::make_shared<Sphere>(Point3d(0, 0, -1), 0.5));
+    world.push_back(std::make_shared<Sphere>(Point3d(0, -100.5, -1), 100));
 
     Camera camera{};
     camera.center = Point3d(0, 0, 0);
@@ -70,7 +60,7 @@ int main() {
             auto direction = pixel - camera.center;
             Ray ray(camera.center, direction);
 
-            file << GetRayColor(ray) << "\n";
+            file << GetRayColor(ray, world) << "\n";
         }
     }
 

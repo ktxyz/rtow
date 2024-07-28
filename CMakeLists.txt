@@ -12,4 +12,9 @@ add_executable(rtow src/rtow.cpp
         src/vec3.h
         src/color.h
         src/ray.h
-        src/sphere.h)
+        src/sphere.h
+        src/hittable.h
+        src/hittable_list.h
+        src/math.h
+        src/rtow.h
+        src/interval.h)

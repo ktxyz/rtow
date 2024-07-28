@@ -4,23 +4,42 @@
 
 #ifndef SPHERE_H
 #define SPHERE_H
+#pragma once
 
-#include "vec3.h"
-#include "ray.h"
+#include "hittable.h"
 
-struct Sphere {
+
+class Sphere : public Hittable {
     Point3d center;
     double radius;
+public:
+    Sphere(const Point3d& center, double radius) : center(center), radius(std::fmax(0, radius)) {}
 
-    bool is_hit(const Ray& ray) const {
-        const auto oc = center - ray.origin();
+    bool CheckHit(const Ray &ray, const Interval& interval, HitRecord &record) const override {
+        Vec3d oc = center - ray.origin();
+        auto a = ray.direction().length2();
+        auto h = MathUtil::dot(ray.direction(), oc);
+        auto c = oc.length2() - radius * radius;
 
-        const auto a = Vec3Util::dot(ray.direction(), ray.direction());
-        const auto b = -2.0 * Vec3Util::dot(ray.direction(), oc);
-        const auto c = Vec3Util::dot(oc, oc) - radius * radius;
+        auto discriminant = h*h - a*c;
+        if (discriminant < 0)
+            return false;
 
-        const auto discriminant = (b * b) - (4 * a * c);
-        return discriminant >= 0;
+        auto sqrtd = std::sqrt(discriminant);
+
+        auto root = (h - sqrtd) / a;
+        if (!interval.Surrounds(root)) {
+            root = (h + sqrtd) / a;
+            if (!interval.Surrounds(root))
+                return false;
+        }
+
+        record.offset = root;
+        record.point = ray.Offset(record.offset);
+        record.normal = (record.point - center) / radius;
+        record.set_face_normal(ray, record.normal);
+
+        return true;
     }
 };
 

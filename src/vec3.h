@@ -91,20 +91,4 @@ Vec3<T> operator/(const Vec3<T>& v1, T value) {
     return v1 * (1.0 / value);
 }
 
-namespace Vec3Util {
-    template<typename T>
-    T dot(const Vec3<T>& v1, const Vec3<T>& v2) {
-        return v1.x() * v2.x() + v1.y() * v2.y() + v1.z() * v2.z();
-    }
-
-    template<typename T>
-    Vec3<T> cross(const Vec3<T>& v1, const Vec3<T>& v2) {
-        return {
-            v1.x() * v2.z() - v1.z() * v2.x(),
-            v1.z() * v2.x() - v1.x() * v2.z(),
-            v1.x() * v2.y() - v1.y() * v2.x(),
-        };
-    }
-}
-
 #endif //VEC3_H
