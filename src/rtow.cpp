@@ -2,7 +2,6 @@
 // Created by Kamil Tokarski on 26/07/2024.
 //
 
-
 #include "camera.h"
 
 
@@ -15,7 +14,8 @@ int main() {
 
     Camera camera;
     camera.aspect_ratio = 16.f / 9.f;
-    camera.image_width = 1024;
+    camera.image_width = 400;
+    camera.samples_per_pixel = 50;
 
     camera.Render(world, file);
 

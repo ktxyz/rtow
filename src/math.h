@@ -8,6 +8,7 @@
 
 #include <limits>
 #include <memory>
+#include <random>
 
 #include "vec3.h"
 
@@ -18,6 +19,16 @@ namespace MathUtil {
 
     inline double Deg2Rad(const double degrees) {
         return degrees * PI / 180.0;
+    }
+
+    inline double RandomDouble() {
+        static std::uniform_real_distribution<double> distribution(0.0, 1.0);
+        static std::mt19937 generator;
+        return distribution(generator);
+    }
+
+    inline Vec3d RandomWindow(const double window_size = 0.5) {
+        return {RandomDouble() - window_size, RandomDouble() - window_size, 0};
     }
 
     template<typename T>

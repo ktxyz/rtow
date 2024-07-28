@@ -6,26 +6,26 @@
 #define COLOR_H
 #pragma once
 
-#include <fstream>
-
-#include "hittable.h"
+#include "interval.h"
 
 
 using Color = Vec3d;
 constexpr double PPM_VALUE = 255.99;
 
-inline std::fstream& operator<<(std::fstream& out, const Color& col) {
-    out << static_cast<int>(col.x() * PPM_VALUE) << " " <<
-            static_cast<int>(col.y() * PPM_VALUE) << " " <<
-            static_cast<int>(col.z() * PPM_VALUE);
+template <typename Stream>
+Stream& operator<<(Stream& out, const Color& col) {
+    const auto r = col.x();
+    const auto g = col.y();
+    const auto b = col.z();
+
+    static const Interval intensity(0.000, 0.999);
+    const int rbyte = static_cast<int>(256 * intensity.Clamp(r));
+    const int gbyte = static_cast<int>(256 * intensity.Clamp(g));
+    const int bbyte = static_cast<int>(256 * intensity.Clamp(b));
+
+    out << rbyte << " " << gbyte << " " << bbyte;
     return out;
 }
 
-inline std::ostream& operator<<(std::ostream& out, const Color& col) {
-    out << static_cast<int>(col.x() * PPM_VALUE) << " " <<
-            static_cast<int>(col.y() * PPM_VALUE) << " " <<
-            static_cast<int>(col.z() * PPM_VALUE);
-    return out;
-}
 
 #endif //COLOR_H

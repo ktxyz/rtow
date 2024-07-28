@@ -18,11 +18,14 @@ class Camera {
     Vec3d pixel_delta_u;
     Vec3d pixel_delta_v;
 
+    double pixel_samples_scale;
+
     void Initialize() {
         image_height = static_cast<int>(image_width / aspect_ratio);
         image_height = (image_height < 1 ? 1 : image_height);
 
         center = Point3d(0, 0, 0);
+        pixel_samples_scale = 1.0 / samples_per_pixel;
 
         constexpr auto focal_length = 1.0;
         constexpr auto view_height = 2.0;
@@ -39,6 +42,16 @@ class Camera {
         pixel00_loc = view_corner + 0.5 * (pixel_delta_u + pixel_delta_v);
     }
 
+    Ray GetRay(int y, int x) {
+        auto offset = MathUtil::RandomWindow();
+        auto pixel_sample = pixel00_loc
+                          + ((x + offset.x()) * pixel_delta_u)
+                          + ((y + offset.y()) * pixel_delta_v);
+        auto ray_origin = center;
+        auto ray_direction = pixel_sample - ray_origin;
+
+        return Ray(ray_origin, ray_direction);
+    }
 
     static Color GetRayColor(const Ray& ray, const Hittable& world) {
         if (HitRecord record; world.CheckHit(ray, Interval(0, MathUtil::INF), record))
@@ -52,6 +65,7 @@ class Camera {
 public:
     double aspect_ratio = 1.0;
     int image_width = 100;
+    int samples_per_pixel = 10;
 
     void Render(const Hittable& world, std::ofstream& file) {
         Initialize();
@@ -67,17 +81,28 @@ public:
                 progress = 0;
             }
             for(auto x = 0; x < image_width; ++x) {
-                auto pixel =  pixel00_loc
-                                          + (static_cast<double>(x) * pixel_delta_u)
-                                          + (static_cast<double>(y) * pixel_delta_v);
-                auto direction = pixel - center;
-                Ray ray(center, direction);
+                Color pixel_color(0, 0, 0);
 
-                file << GetRayColor(ray, world) << "\n";
+                {
+                    auto pixel =  pixel00_loc
+                                             + (static_cast<double>(x) * pixel_delta_u)
+                                             + (static_cast<double>(y) * pixel_delta_v);
+                    auto direction = pixel - center;
+                    Ray ray(center, direction);
+                    pixel_color += GetRayColor(ray, world);
+                }
+
+
+                for(auto sample = 1; sample < samples_per_pixel; ++sample) {
+                    auto ray = GetRay(y, x);
+                    pixel_color += GetRayColor(ray, world);
+                }
+
+                file << pixel_color * pixel_samples_scale << "\n";
             }
         }
-        std::cerr << "]\n";
 
+        std::cerr << "]\n";
         std::cerr << "Finished." << "\n";
     }
 };

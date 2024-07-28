@@ -20,6 +20,8 @@ public:
     bool Contains(const double point) const { return point >= min && point <= max; }
     bool Surrounds(const double point) const { return point > min && point < max; }
 
+    double Clamp(const double point) const { return std::max(min, std::min(point, max)); }
+
     static const Interval empty, universe;
 };
 
