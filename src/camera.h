@@ -7,6 +7,7 @@
 #pragma once
 
 #include "rtow.h"
+#include "material.h"
 
 const auto PPM_HEADER = "P3\n";
 
@@ -43,7 +44,7 @@ class Camera {
     }
 
     Ray GetRay(int y, int x) {
-        auto offset = MathUtil::RandomWindow();
+        auto offset = VecUtil::RandomWindow();
         auto pixel_sample = pixel00_loc
                           + ((x + offset.x()) * pixel_delta_u)
                           + ((y + offset.y()) * pixel_delta_v);
@@ -57,12 +58,16 @@ class Camera {
         if (depth >= max_depth)
             return {0, 0, 0};
 
-        if (HitRecord record; world.CheckHit(ray, Interval(0.1, MathUtil::INF), record)) {
-            auto direction = record.normal + MathUtil::RandomUnitVec3d();
-            return 0.5 * GetRayColor(Ray(record.point, direction), world, depth + 1);
+        if (HitRecord record; world.CheckHit(ray, Interval(0.001, MathUtil::INF), record)) {
+            Ray scattered;
+            Color attenuation;
+
+            if (record.material->Scatter(ray, record, attenuation, scattered))
+                return attenuation * GetRayColor(scattered, world, depth + 1);
+            return {0, 0, 0};
         }
 
-        const auto unit_dir = ray.direction().unit();
+        const auto unit_dir = ray.direction().Unit();
         const auto alpha = (unit_dir.y() + 1.0) / 2.f;
 
         return (1.0 - alpha) * Color(1, 1, 1) + alpha * Color(0.5, 0.7, 1.0);

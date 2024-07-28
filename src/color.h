@@ -7,6 +7,7 @@
 #pragma once
 
 #include "interval.h"
+#include "vec3.h"
 
 
 using Color = Vec3d;
