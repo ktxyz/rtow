@@ -17,4 +17,5 @@ add_executable(rtow src/rtow.cpp
         src/hittable_list.h
         src/math.h
         src/rtow.h
-        src/interval.h)
+        src/interval.h
+        src/camera.h)

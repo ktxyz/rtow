@@ -6,6 +6,9 @@
 #define RTOW_H
 #pragma once
 
+#include <fstream>
+#include <iostream>
+
 #include "math.h"
 #include "color.h"
 #include "sphere.h"
