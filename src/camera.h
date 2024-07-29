@@ -21,6 +21,8 @@ class Camera {
 
     double pixel_samples_scale;
 
+    Vec3d defocus_disk_u, defocus_disk_v;
+
     Vec3d u, v, w;
 
     void Initialize() {
@@ -30,10 +32,10 @@ class Camera {
         pixel_samples_scale = 1.0 / samples_per_pixel;
         center = camera_pos;
 
-        const auto focal_length = (camera_pos - view_pos).Length();
+        // const auto focal_length = (camera_pos - view_pos).Length();
         const auto theta = MathUtil::Deg2Rad(fov);
         const auto h = std::tan(theta/2);
-        const auto view_height = 2 * h * focal_length;
+        const auto view_height = 2 * h * focus_distance;
         const auto view_width = view_height * (static_cast<double>(image_width) / (image_height));
 
         w = (camera_pos - view_pos).Unit();
@@ -46,8 +48,12 @@ class Camera {
         pixel_delta_u = viewport_u / static_cast<double>(image_width);
         pixel_delta_v = viewport_v / static_cast<double>(image_height);
 
-        const auto view_corner = center - (focal_length * w) - viewport_u/2.0 - viewport_v/2.0;
+        const auto view_corner = center - (focus_distance * w) - viewport_u/2.0 - viewport_v/2.0;
         pixel00_loc = view_corner + 0.5 * (pixel_delta_u + pixel_delta_v);
+
+        const auto defocus_radius = focus_distance * std::tan(MathUtil::Deg2Rad(defocus_angle / 2));
+        defocus_disk_u = u * defocus_radius;
+        defocus_disk_v = u * defocus_radius;
     }
 
     Ray GetRay(int y, int x) {
@@ -55,10 +61,15 @@ class Camera {
         auto pixel_sample = pixel00_loc
                           + ((x + offset.x()) * pixel_delta_u)
                           + ((y + offset.y()) * pixel_delta_v);
-        auto ray_origin = center;
+        auto ray_origin = (defocus_angle <= 0) ? (center) : DefocusDiskSample();
         auto ray_direction = pixel_sample - ray_origin;
 
         return Ray(ray_origin, ray_direction);
+    }
+
+    Point3d DefocusDiskSample() const {
+        auto p = VecUtil::RandomVec3dInUnitDisk();
+        return center + p.x() * defocus_disk_u + p.y() * defocus_disk_v;
     }
 
     Color GetRayColor(const Ray& ray, const Hittable& world, const int depth = 0) {
@@ -90,6 +101,9 @@ public:
     Point3d camera_pos;
     Point3d view_pos;
     Vec3d vector_up;
+
+    double defocus_angle = 0;
+    double focus_distance = 10;
 
     void Render(const Hittable& world, std::ofstream& file) {
         Initialize();

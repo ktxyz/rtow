@@ -144,6 +144,14 @@ namespace VecUtil {
         const auto r_out_parall = -std::sqrt(std::fabs(1.0 - r_out_perp.Length2())) * n;
         return r_out_perp + r_out_parall;
     }
+
+    inline Vec3d RandomVec3dInUnitDisk() {
+        while (true) {
+            auto p = Vec3d(MathUtil::RandomDouble(-1,1), MathUtil::RandomDouble(-1,1), 0);
+            if (p.Length2() < 1)
+                return p;
+        }
+    }
 }
 
 #endif //VEC3_H

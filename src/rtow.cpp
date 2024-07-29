@@ -31,6 +31,9 @@ int main() {
     camera.view_pos = Point3d(0, 0, -1);
     camera.vector_up = Vec3d(0, 1, 0);
 
+    camera.defocus_angle = 10;
+    camera.focus_distance = 3.4;
+
     camera.Render(world, file);
 
     return 0;
