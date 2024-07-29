@@ -137,6 +137,13 @@ namespace VecUtil {
     inline Vec3d ReflectVec3d(const Vec3d& vec, const Vec3d& origin) {
         return vec - 2 * Dot(vec, origin) * origin;
     }
+
+    inline Vec3d Refract(const Vec3d& uv, const Vec3d& n, double etai_over_etat) {
+        const auto cos_theta = std::fmin(Dot(-uv, n), 1.0);
+        const auto r_out_perp = etai_over_etat * (uv + cos_theta * n);
+        const auto r_out_parall = -std::sqrt(std::fabs(1.0 - r_out_perp.Length2())) * n;
+        return r_out_perp + r_out_parall;
+    }
 }
 
 #endif //VEC3_H
