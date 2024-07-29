@@ -13,6 +13,14 @@
 using Color = Vec3d;
 constexpr double PPM_VALUE = 255.99;
 
+namespace ColorUtils {
+    inline Color RandomColor(double min = 0, double max = 1) {
+        return {MathUtil::RandomDouble(min, max),
+                    MathUtil::RandomDouble(min, max),
+                    MathUtil::RandomDouble(min, max)};
+    }
+}
+
 inline double Linear2Gamma(const double linear_component) {
     if (linear_component > 0)
         return std::sqrt(linear_component);

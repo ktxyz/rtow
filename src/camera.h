@@ -6,6 +6,9 @@
 #define CAMERA_H
 #pragma once
 
+#include <functional>
+#include <thread>
+
 #include "rtow.h"
 #include "material.h"
 
@@ -105,43 +108,62 @@ public:
     double defocus_angle = 0;
     double focus_distance = 10;
 
-    void Render(const Hittable& world, std::ofstream& file) {
-        Initialize();
-
-        auto progress_update = image_height / 10;
-        auto progress = 0;
-        std::cerr << "Render started" << std::endl;
-        std::cerr << "[";
-        file << PPM_HEADER << image_width << " " << image_height << "\n255\n";
-        for (auto y = 0; y < image_height; ++y) {
-            if (++progress == progress_update) {
-                std::cerr << "+";
-                progress = 0;
-            }
-            for(auto x = 0; x < image_width; ++x) {
+    void RenderStrip(int start_y, int end_y, const Hittable& world, std::vector<Color>& buffer, std::atomic<int>& progress) {
+        for (auto y = start_y; y < end_y; ++y) {
+            for (auto x = 0; x < image_width; ++x) {
                 Color pixel_color(0, 0, 0);
 
                 {
-                    auto pixel =  pixel00_loc
-                                             + (static_cast<double>(x) * pixel_delta_u)
-                                             + (static_cast<double>(y) * pixel_delta_v);
+                    auto pixel = pixel00_loc
+                                 + (static_cast<double>(x) * pixel_delta_u)
+                                 + (static_cast<double>(y) * pixel_delta_v);
                     auto direction = pixel - center;
                     Ray ray(center, direction);
                     pixel_color += GetRayColor(ray, world);
                 }
 
-
-                for(auto sample = 1; sample < samples_per_pixel; ++sample) {
+                for (auto sample = 1; sample < samples_per_pixel; ++sample) {
                     auto ray = GetRay(y, x);
                     pixel_color += GetRayColor(ray, world);
                 }
 
-                file << pixel_color * pixel_samples_scale << "\n";
+                buffer[y * image_width + x] = pixel_color * pixel_samples_scale;
             }
+            ++progress;
+        }
+    }
+
+    void Render(const Hittable& world, std::ofstream& file) {
+        Initialize();
+
+        std::atomic<int> progress(0);
+
+        std::cerr << "Render started" << "\n";
+        std::cerr << "[";
+
+        file << PPM_HEADER << image_width << " " << image_height << "\n255\n";
+
+        std::vector<Color> buffer(image_width * image_height);
+        std::vector<std::thread> threads;
+        int num_threads = std::thread::hardware_concurrency();
+        int strip_height = image_height / num_threads;
+
+        for (int i = 0; i < num_threads; ++i) {
+            int start_y = i * strip_height;
+            int end_y = (i == num_threads - 1) ? image_height : start_y + strip_height;
+            threads.emplace_back([this, start_y, end_y, &world, &buffer, &progress] { RenderStrip(start_y, end_y, world, buffer, progress); });
         }
 
-        std::cerr << "]\n";
-        std::cerr << "Finished." << "\n";
+        for (auto& t : threads) {
+            t.join();
+        }
+
+        for (int y = 0; y < image_height; ++y) {
+            for (int x = 0; x < image_width; ++x) {
+                file << buffer[y * image_width + x] << "\n";
+            }
+        }
+        std::cerr << "]" << std::endl;
     }
 };
 
