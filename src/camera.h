@@ -21,25 +21,32 @@ class Camera {
 
     double pixel_samples_scale;
 
+    Vec3d u, v, w;
+
     void Initialize() {
         image_height = static_cast<int>(image_width / aspect_ratio);
         image_height = (image_height < 1 ? 1 : image_height);
 
-        center = Point3d(0, 0, 0);
         pixel_samples_scale = 1.0 / samples_per_pixel;
+        center = camera_pos;
 
-        constexpr auto focal_length = 1.0;
-        constexpr auto view_height = 2.0;
+        const auto focal_length = (camera_pos - view_pos).Length();
+        const auto theta = MathUtil::Deg2Rad(fov);
+        const auto h = std::tan(theta/2);
+        const auto view_height = 2 * h * focal_length;
         const auto view_width = view_height * (static_cast<double>(image_width) / (image_height));
 
-        const auto viewport_u = Vec3d(view_width, 0, 0);
-        const auto viewport_v = Vec3d(0, -view_height, 0);
+        w = (camera_pos - view_pos).Unit();
+        u = (VecUtil::Cross(vector_up, w)).Unit();
+        v = VecUtil::Cross(w, u);
+
+        const auto viewport_u = view_width * u;
+        const auto viewport_v = view_height * -v;
 
         pixel_delta_u = viewport_u / static_cast<double>(image_width);
         pixel_delta_v = viewport_v / static_cast<double>(image_height);
 
-        const auto view_corner = center - Vec3d(0, 0, focal_length)
-                                       - viewport_u / 2.0 - viewport_v / 2.0;
+        const auto view_corner = center - (focal_length * w) - viewport_u/2.0 - viewport_v/2.0;
         pixel00_loc = view_corner + 0.5 * (pixel_delta_u + pixel_delta_v);
     }
 
@@ -77,6 +84,12 @@ public:
     int image_width = 100;
     int samples_per_pixel = 10;
     int max_depth = 10;
+
+    double fov = 90.f;
+
+    Point3d camera_pos;
+    Point3d view_pos;
+    Vec3d vector_up;
 
     void Render(const Hittable& world, std::ofstream& file) {
         Initialize();
